@@ -1,15 +1,14 @@
 const surveys = [
   {
-    label: 'Diagnose Me',
-        key: 'diagnoseMe',
-    
+    label: 'General Diagnose',
+    key: 'diagnoseMe',
   },
   {
-    label: 'Diagnose Sugar',
+    label: 'Sugar Diagnose ',
     key: 'diagnoseSugar',
   },
   {
-    label: 'Diagnose Heart',
+    label: 'Heart Diagnose',
     key: 'diagnoseHeart',
   },
 ]

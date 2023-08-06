@@ -7,6 +7,9 @@ from django.conf import settings
 import pickle
 import numpy as np
 from ML.ChatBot import ChatBot
+import tensorflow as tf
+from keras.preprocessing import image
+import keras.utils as image
 
 
 @api_view(["POST"])
@@ -25,9 +28,7 @@ def survey(request):
         serializer = AnswerSerializer(data=answer)
         serializer.is_valid(raise_exception=True)
 
-    encoded_answers = [
-        1 if answer["answer"] == "Yes" else 0 for answer in answers
-    ]*6
+    encoded_answers = [1 if answer["answer"] == "Yes" else 0 for answer in answers] * 6
 
     encoded_answers = np.array(encoded_answers).reshape(1, -1)
     predictor = pickle.load(open("ML/random_forest.pkl", "rb"))
@@ -43,10 +44,38 @@ def upload(request):
     handler = FileHandler(file, f"{settings.MEDIA_ROOT}/uploaded_file.{file_type}")
     handler.create_temp_file()
 
-    # ML upload Model comes here
+    input_shape = (64, 64, 3)
+    cnn = tf.keras.models.Sequential()
+    cnn.add(
+        tf.keras.layers.Conv2D(
+            filters=32, kernel_size=3, activation="relu", input_shape=input_shape
+        )
+    )
+    cnn.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
+    cnn.add(tf.keras.layers.Flatten())
+    cnn.add(tf.keras.layers.Dense(units=128, activation="relu"))
+    cnn.add(tf.keras.layers.Dense(units=1, activation="sigmoid"))
 
+    # Load the model weights from the HDF5 file
+    cnn.load_weights("ML/cnn_model.h5")
+
+    # Compile the model
+    cnn.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    modified_image = image.load_img(
+        f"{settings.MEDIA_ROOT}/uploaded_file.{file_type}", target_size=(64, 64)
+    )
+    modified_image = image.img_to_array(modified_image)
+    modified_image = np.expand_dims(modified_image, axis=0)
+
+    result = cnn.predict(modified_image)
+    if result[0][0] == 0:
+        prediction = "Negative (normal)"
+    else:
+        prediction = "Positive (Covid)"
+        
+    # ML upload Model comes here
     handler.delete_file()
-    return Response({"message": "hello world"}, status=status.HTTP_200_OK)
+    return Response({"result": prediction}, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -58,7 +87,6 @@ def chat_bot(request):
 
     # Substitue thie dictionary with the ML model response
     return Response({"message": ans}, status=status.HTTP_200_OK)
-
 
 
 # @api_view(["POST"])
