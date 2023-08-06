@@ -4,6 +4,9 @@ from rest_framework import status
 from .serializers import AnswerSerializer
 from utils.FileHandler import FileHandler
 from django.conf import settings
+import pickle
+import numpy as np
+from ML.ChatBot import ChatBot
 
 
 @api_view(["POST"])
@@ -14,7 +17,7 @@ def survey(request):
             {"message": "Invalid data type,must be a list"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    if len(answers) < 20 or len(answers) > 20:
+    if len(answers) != 22:
         return Response(
             {"message": "Invalid number of answers"}, status=status.HTTP_400_BAD_REQUEST
         )
@@ -22,15 +25,14 @@ def survey(request):
         serializer = AnswerSerializer(data=answer)
         serializer.is_valid(raise_exception=True)
 
-    # ML survey Model comes here
     encoded_answers = [
-        111111 if answer["answer"] == "Yes" else 000000 for answer in answers
-    ]
+        1 if answer["answer"] == "Yes" else 0 for answer in answers
+    ]*6
 
-    # survey_model(encoded_answers)
-
-    # Substitue thie dictionary with the ML model response
-    return Response({"message": "hello world"}, status=status.HTTP_200_OK)
+    encoded_answers = np.array(encoded_answers).reshape(1, -1)
+    predictor = pickle.load(open("ML/random_forest.pkl", "rb"))
+    res = predictor.predict(encoded_answers)
+    return Response({"prediction": res}, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -52,6 +54,7 @@ def chat_bot(request):
     question = request.data.get("question")
 
     # ML chatbot Model comes here
+    ans = ChatBot().predict(question)
 
     # Substitue thie dictionary with the ML model response
-    return Response({"message": "hello world"}, status=status.HTTP_200_OK)
+    return Response({"message": ans}, status=status.HTTP_200_OK)
