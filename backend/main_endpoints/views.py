@@ -58,3 +58,30 @@ def chat_bot(request):
 
     # Substitue thie dictionary with the ML model response
     return Response({"message": ans}, status=status.HTTP_200_OK)
+
+
+
+# @api_view(["POST"])
+# def heart(request):
+#     answers = request.data
+#     if not isinstance(answers, list):
+#         return Response(
+#             {"message": "Invalid data type,must be a list"},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
+#     if len(answers) != 13:
+#         return Response(
+#             {"message": "Invalid number of answers"}, status=status.HTTP_400_BAD_REQUEST
+#         )
+#     for answer in answers:
+#         serializer = AnswerSerializer(data=answer)
+#         serializer.is_valid(raise_exception=True)
+
+#     encoded_answers = [
+#         1 if answer["answer"] == "Yes" else 0 for answer in answers
+#     ]*6
+
+#     encoded_answers = np.array(encoded_answers).reshape(1, -1)
+#     predictor = pickle.load(open("ML/random_forest.pkl", "rb"))
+#     res = predictor.predict(encoded_answers)
+#     return Response({"prediction": res}, status=status.HTTP_200_OK)
