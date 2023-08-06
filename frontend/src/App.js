@@ -12,6 +12,8 @@ import { UploadOutlined } from '@ant-design/icons'
 function App() {
   const handleSubmit = async (answers) => {
     try {
+      if (answers.length !== questions.length)
+        throw new Error('All questions have to be answered!')
       let res = await sendSurvey(answers)
       if (res.status === 200) {
         createNotification(
@@ -22,7 +24,7 @@ function App() {
         )
       }
     } catch (error) {
-      createNotification('error', 'Error', `something went wrong...`)
+      createNotification('error', 'Error', error.message)
     }
   }
 
