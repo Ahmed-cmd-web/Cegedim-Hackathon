@@ -10,4 +10,6 @@ pip install --upgrade pip
 
 pip3 install -r requirements.txt
 
+python3 manage.py migrate
+
 printf "${BBlue}Project has been setup successfully! \nTry running the following command: \n ${BGreen}python3 manage.py runserver \n"
