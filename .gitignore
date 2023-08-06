@@ -3,4 +3,5 @@ v1
 db.sqlite3
 __pycache__/
 .DS_Store
+node_modules
 ```
